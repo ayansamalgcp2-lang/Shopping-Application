@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/product';
+const API_URL = 'http://localhost:8080/api/product';
 
 function App() {
   const [products, setProducts] = useState([]);
