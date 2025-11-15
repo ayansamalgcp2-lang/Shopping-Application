@@ -72,3 +72,10 @@ docker-compose up -d
 cd shop-frontend
 npm install
 ng serve
+
+#backend-service start
+
+cd /mnt/c/Users/ayan/Downloads/gcp-experiments/Shopping-Application/product-service
+./mvnw clean install -DskipTests
+./mvnw spring-boot:run
+
