@@ -79,3 +79,79 @@ cd /mnt/c/Users/ayan/Downloads/gcp-experiments/Shopping-Application/product-serv
 ./mvnw clean install -DskipTests
 ./mvnw spring-boot:run
 
+# Without non-root user:
+whoami
+# Output: root
+
+# If an attacker exploits your application:
+# - They have root access inside the container
+# - Potential to escape container and access host
+# - Can modify system files
+# - Can install malware
+
+# With non-root user:
+whoami
+# Output: spring (UID 1000)
+
+# If an attacker exploits your application:
+# - Limited to "spring" user permissions
+# - Cannot modify system files
+# - Cannot install system packages
+# - Reduced attack surface
+
+# Inside container
+$ whoami
+spring
+
+$ id
+uid=1000(spring) gid=1000(spring) groups=1000(spring)
+
+$ ls -la /app
+drwxr-xr-x spring spring /app
+-rw-r--r-- spring spring /app/application.jar
+
+# Cannot do dangerous things:
+$ apt-get install malware  # ❌ Permission denied
+$ rm -rf /etc  # ❌ Permission denied
+
+Scenario: SQL Injection vulnerability in your Spring Boot app
+Running as RootRunning as Non-Root
+❌ Attacker gets root shell✅ Attacker gets limited shell
+❌ Can read /etc/shadow✅ Cannot read system files
+❌ Can install backdoors✅ Cannot install packages
+❌ Can modify app logs✅ Limited to app permissions
+❌ Easier container escape✅ Harder to escalate privileges
+
+It is trying to search about the mongodb inside the container but there is no mongodb inisde the backend container
+
+# Just remove the corrupted cache layers , sometimes it might fail due to some reason
+docker builder prune -f
+
+# Build normally (will use cache for valid layers)
+docker build -f Dockerfile2 -t backend:Dockerfile2 .
+
+# Start MongoDB container
+docker run -d \
+  --name mongodb \
+  -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=admin123 \
+  mongo:7.0
+
+# Create a custom network
+docker network create product-network
+
+# Connect MongoDB to the network
+docker network connect product-network mongodb
+
+# Run your app connected to the same network
+docker run -d \
+  --name product-service \
+  --network product-network \
+  -p 8080:8080 \
+  -e SPRING_DATA_MONGODB_HOST=mongodb \
+  -e SPRING_DATA_MONGODB_PORT=27017 \
+  -e SPRING_DATA_MONGODB_DATABASE=productdb \
+  -e SPRING_DATA_MONGODB_USERNAME=admin \
+  -e SPRING_DATA_MONGODB_PASSWORD=admin123 \
+  backend:Dockerfile2

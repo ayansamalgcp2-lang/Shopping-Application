@@ -89,6 +89,12 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<layers>
+						<enabled>true</enabled>
+					</layers>
+					<image>
+						<name>${project.artifactId}:${project.version}</name>
+					</image>									
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

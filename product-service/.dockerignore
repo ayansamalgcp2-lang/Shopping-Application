@@ -1,9 +1,66 @@
+# target/
+# .mvn/
+# *.log
+# .git
+# .gitignore
+# README.md
+# Dockerfile
+# .dockerignore
+# *.md
+
+
+# Build artifacts
 target/
-.mvn/
-*.log
-.git
+build/
+*.jar
+*.war
+*.class
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+
+# Version control
+.git/
 .gitignore
+.gitattributes
+
+# Logs and diagnostics
+*.log
+diagnostic.sh
+backend.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentation
 README.md
-Dockerfile
-.dockerignore
+docs/
 *.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Test files (if you want to exclude)
+# src/test/
+
+# Environment files
+.env
+.env.local
+*.properties.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
