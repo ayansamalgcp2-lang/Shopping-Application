@@ -155,3 +155,16 @@ docker run -d \
   -e SPRING_DATA_MONGODB_USERNAME=admin \
   -e SPRING_DATA_MONGODB_PASSWORD=admin123 \
   backend:Dockerfile2
+
+
+# Build 1 (slow)
+docker build -f Dockerfile2 -t backend:Dockerfile2 . --progress=plain
+
+# Make a small code change in any .java file
+
+# Build 2 (should be faster)
+docker build -f Dockerfile2 -t backend:Dockerfile2 . --progress=plain
+
+# You should see:
+# => CACHED [dependencies 5/5] RUN ./mvnw dependency:go-offline -B
+# => [build 2/3] COPY src ./src   <-- Only this and below rebuild
