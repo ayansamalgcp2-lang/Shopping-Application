@@ -83,6 +83,10 @@
 							<artifactId>lombok</artifactId>
 						</path>
 					</annotationProcessorPaths>
+					<compilerArgs>
+						<arg>-J-XX:+TieredCompilation</arg>
+						<arg>-J-XX:TieredStopAtLevel=1</arg>
+					</compilerArgs>					
 				</configuration>
 			</plugin>
 			<plugin>
@@ -92,6 +96,7 @@
 					<layers>
 						<enabled>true</enabled>
 					</layers>
+                	<fork>false</fork>					
 					<image>
 						<name>${project.artifactId}:${project.version}</name>
 					</image>									

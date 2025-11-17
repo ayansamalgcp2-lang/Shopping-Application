@@ -1,20 +1,9 @@
-# target/
-# .mvn/
-# *.log
-# .git
-# .gitignore
-# README.md
-# Dockerfile
-# .dockerignore
-# *.md
-
-
-# Build artifacts
+# Build artifacts (don't send to Docker)
 target/
 build/
+*.class
 *.jar
 *.war
-*.class
 
 # IDE files
 .idea/
@@ -23,44 +12,32 @@ build/
 .project
 .classpath
 .settings/
-*.swp
-*.swo
-*~
 
 # Version control
 .git/
 .gitignore
-.gitattributes
 
-# Logs and diagnostics
+# Logs
 *.log
-diagnostic.sh
-backend.log
 
 # OS files
 .DS_Store
 Thumbs.db
-desktop.ini
+
+# Test files (if not needed)
+src/test/
 
 # Documentation
-README.md
-docs/
 *.md
+docs/
 
-# CI/CD
-.github/
-.gitlab-ci.yml
-Jenkinsfile
+# Other Dockerfiles
+Dockerfile*
+!Dockerfile2
 
-# Test files (if you want to exclude)
-# src/test/
+# Node modules (if any)
+node_modules/
 
 # Environment files
 .env
 .env.local
-*.properties.local
-
-# Temporary files
-tmp/
-temp/
-*.tmp
