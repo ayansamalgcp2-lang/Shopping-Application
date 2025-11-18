@@ -4,30 +4,24 @@ FROM eclipse-temurin:21-jdk-alpine AS base
 RUN apk add --no-cache bash
 WORKDIR /app
 
-# Layer 1: Maven wrapper
+# Layer 1: Maven wrapper (almost never changes)
 FROM base AS mvn-setup
 COPY .mvn .mvn
 COPY mvnw .
 RUN chmod +x mvnw
 
-# Layer 2: Download ALL dependencies (including plugins and test deps)
+# Layer 2: Dependencies (changes only when pom.xml changes)
 FROM mvn-setup AS dependencies
 COPY pom.xml .
-
-# Download dependencies more comprehensively
+COPY settings.xml /root/.m2/settings.xml
 RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
-    ./mvnw dependency:go-offline -B && \
-    ./mvnw dependency:resolve -B && \
-    ./mvnw dependency:resolve-plugins -B && \
-    echo "Dependencies downloaded"
+    ./mvnw dependency:go-offline -B -T 4
 
-# Layer 3: Build
+# Layer 3: Build (changes when code changes)
 FROM dependencies AS build
 COPY src ./src
-
-# Build WITHOUT offline mode (let it fetch anything that's missing)
 RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
-    ./mvnw clean package -DskipTests -T 4 && \
+    ./mvnw package -DskipTests -T 4  && \
     java -Djarmode=layertools -jar target/*.jar extract --destination target/extracted
 
 # Production
