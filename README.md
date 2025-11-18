@@ -151,10 +151,16 @@ docker run -d \
   -p 8080:8080 \
   -e SPRING_DATA_MONGODB_HOST=mongodb \
   -e SPRING_DATA_MONGODB_PORT=27017 \
-  -e SPRING_DATA_MONGODB_DATABASE=productdb \
-  -e SPRING_DATA_MONGODB_USERNAME=admin \
-  -e SPRING_DATA_MONGODB_PASSWORD=admin123 \
-  backend:Dockerfile2
+  -e SPRING_DATA_MONGODB_DATABASE=product-service \
+  -e SPRING_DATA_MONGODB_USERNAME=root \
+  -e SPRING_DATA_MONGODB_PASSWORD=password \
+  backend:Dockerfile3
+
+docker run -d \
+  --name frontend-service \
+  --network product-network \
+  -p 3000:80 \
+  frontend:Dockerfile  
 
 
 # Build 1 (slow)
