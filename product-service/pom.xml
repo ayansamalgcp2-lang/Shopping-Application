@@ -69,6 +69,17 @@
 			<artifactId>rest-assured</artifactId>
 			<version>5.3.2</version>
 		</dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-bom</artifactId>
+            <version>5.6.1</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+		</dependency>				
 	</dependencies>
 
 	<build>
