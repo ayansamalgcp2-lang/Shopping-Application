@@ -174,3 +174,21 @@ docker build -f Dockerfile2 -t backend:Dockerfile2 . --progress=plain
 # You should see:
 # => CACHED [dependencies 5/5] RUN ./mvnw dependency:go-offline -B
 # => [build 2/3] COPY src ./src   <-- Only this and below rebuild
+
+Check if you have SSH keys:
+
+bash   ls -al ~/.ssh
+
+Generate SSH key if needed:
+
+bash   ssh-keygen -t ed25519 -C "your_email@example.com"
+
+Add SSH key to GitHub:
+
+bash   cat ~/.ssh/id_ed25519.pub
+Copy the output and add it at: https://github.com/settings/keys
+
+Change remote URL to SSH:
+
+bash   git remote set-url origin git@github.com:ayansamalgcp2-lang/Shopping-Application.git
+   git push origin main-3 --force
