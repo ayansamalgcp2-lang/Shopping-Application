@@ -8,13 +8,18 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.MongoDBContainer;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {"spring.testcontainers.enabled=false"})  // ← Add this
 class ProductServiceApplicationTests {
+    @MockBean
+    private MongoTemplate mongoTemplate;  // Mock MongoDB to avoid connection issues	
 
-	@ServiceConnection
-	static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0.5");
+	// @ServiceConnection
+	// static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0.5");
 
 	@LocalServerPort
 	private Integer port;
@@ -25,9 +30,9 @@ class ProductServiceApplicationTests {
 		RestAssured.port = port;
 	}
 
-	static {
-		mongoDBContainer.start();
-	}
+	// static {
+	// 	mongoDBContainer.start();
+	// }
 
 	@Test
 	void shouldCreateProduct(){

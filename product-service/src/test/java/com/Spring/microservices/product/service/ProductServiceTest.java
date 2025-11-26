@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -31,19 +30,18 @@ class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    private ProductRequest productRequest;
-    private Product product;
+    private ProductRequest validProductRequest;
+    private Product savedProduct;
 
     @BeforeEach
     void setUp() {
-        // Setup test data
-        productRequest = ProductRequest.builder()
+        validProductRequest = ProductRequest.builder()
                 .name("iPhone 15")
                 .description("Latest iPhone model")
                 .price(BigDecimal.valueOf(999.99))
                 .build();
 
-        product = Product.builder()
+        savedProduct = Product.builder()
                 .id("1")
                 .name("iPhone 15")
                 .description("Latest iPhone model")
@@ -55,13 +53,14 @@ class ProductServiceTest {
     @DisplayName("Should create product successfully")
     void shouldCreateProductSuccessfully() {
         // Given
-        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
         // When
-        ProductResponse response = productService.createProduct(productRequest);
+        ProductResponse response = productService.createProduct(validProductRequest);
 
         // Then
         assertNotNull(response);
+        assertEquals("1", response.getId());
         assertEquals("iPhone 15", response.getName());
         assertEquals("Latest iPhone model", response.getDescription());
         assertEquals(BigDecimal.valueOf(999.99), response.getPrice());
@@ -80,20 +79,160 @@ class ProductServiceTest {
                 .price(BigDecimal.valueOf(1999.99))
                 .build();
 
-        List<Product> products = Arrays.asList(product, product2);
-        when(productRepository.findAll()).thenReturn(products);
+        when(productRepository.findAll()).thenReturn(Arrays.asList(savedProduct, product2));
 
         // When
-        List<ProductResponse> responses = productService.getAllProducts();
+        List<ProductResponse> products = productService.getAllProducts();
 
         // Then
-        assertNotNull(responses);
-        assertEquals(2, responses.size());
-        assertThat(responses)
-                .extracting(ProductResponse::getName)
-                .containsExactlyInAnyOrder("iPhone 15", "MacBook Pro");
+        assertNotNull(products);
+        assertEquals(2, products.size());
+        assertEquals("iPhone 15", products.get(0).getName());
+        assertEquals("MacBook Pro", products.get(1).getName());
         
         verify(productRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Should handle null product name")
+    void shouldHandleNullProductName() {
+        // Given
+        ProductRequest invalidRequest = ProductRequest.builder()
+                .name(null)  // Null name
+                .description("Test description")
+                .price(BigDecimal.valueOf(100.00))
+                .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(invalidRequest)
+        );
+        
+        assertTrue(exception.getMessage().contains("name"));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle negative price")
+    void shouldHandleNegativePrice() {
+        // Given
+        ProductRequest invalidRequest = ProductRequest.builder()
+                .name("Test Product")
+                .description("Test description")
+                .price(BigDecimal.valueOf(-50.00))  // Negative price
+                .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(invalidRequest)
+        );
+        
+        assertTrue(exception.getMessage().contains("price"));
+        assertTrue(exception.getMessage().contains("negative"));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle empty product name")
+    void shouldHandleEmptyProductName() {
+        // Given
+        ProductRequest invalidRequest = ProductRequest.builder()
+                .name("")  // Empty name
+                .description("Test description")
+                .price(BigDecimal.valueOf(100.00))
+                .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(invalidRequest)
+        );
+        
+        assertTrue(exception.getMessage().contains("name"));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle whitespace-only product name")
+    void shouldHandleWhitespaceProductName() {
+        // Given
+        ProductRequest invalidRequest = ProductRequest.builder()
+                .name("   ")  // Whitespace only
+                .description("Test description")
+                .price(BigDecimal.valueOf(100.00))
+                .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(invalidRequest)
+        );
+        
+        assertTrue(exception.getMessage().contains("name"));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle null price")
+    void shouldHandleNullPrice() {
+        // Given
+        ProductRequest invalidRequest = ProductRequest.builder()
+                .name("Test Product")
+                .description("Test description")
+                .price(null)  // Null price
+                .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(invalidRequest)
+        );
+        
+        assertTrue(exception.getMessage().contains("price"));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle zero price")
+    void shouldHandleZeroPrice() {
+        // Given - Zero price should be allowed
+        ProductRequest requestWithZeroPrice = ProductRequest.builder()
+                .name("Free Product")
+                .description("Test description")
+                .price(BigDecimal.ZERO)
+                .build();
+
+        Product productWithZeroPrice = Product.builder()
+                .id("1")
+                .name("Free Product")
+                .description("Test description")
+                .price(BigDecimal.ZERO)
+                .build();
+
+        when(productRepository.save(any(Product.class))).thenReturn(productWithZeroPrice);
+
+        // When
+        ProductResponse response = productService.createProduct(requestWithZeroPrice);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(BigDecimal.ZERO, response.getPrice());
+        verify(productRepository, times(1)).save(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should handle null product request")
+    void shouldHandleNullProductRequest() {
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> productService.createProduct(null)
+        );
+        
+        assertTrue(exception.getMessage().contains("request"));
+        verify(productRepository, never()).save(any(Product.class));
     }
 
     @Test
@@ -103,52 +242,11 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(Arrays.asList());
 
         // When
-        List<ProductResponse> responses = productService.getAllProducts();
+        List<ProductResponse> products = productService.getAllProducts();
 
         // Then
-        assertNotNull(responses);
-        assertTrue(responses.isEmpty());
-        assertEquals(0, responses.size());
-    }
-
-    @Test
-    @DisplayName("Should handle null product name")
-    void shouldHandleNullProductName() {
-        // Given
-        productRequest.setName(null);
-
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            productService.createProduct(productRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("Should handle negative price")
-    void shouldHandleNegativePrice() {
-        // Given
-        productRequest.setPrice(BigDecimal.valueOf(-10.00));
-
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            productService.createProduct(productRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("Should map product to response correctly")
-    void shouldMapProductToResponseCorrectly() {
-        // Given
-        when(productRepository.findAll()).thenReturn(Arrays.asList(product));
-
-        // When
-        List<ProductResponse> responses = productService.getAllProducts();
-
-        // Then
-        ProductResponse response = responses.get(0);
-        assertEquals(product.getId(), response.getId());
-        assertEquals(product.getName(), response.getName());
-        assertEquals(product.getDescription(), response.getDescription());
-        assertEquals(product.getPrice(), response.getPrice());
+        assertNotNull(products);
+        assertTrue(products.isEmpty());
+        verify(productRepository, times(1)).findAll();
     }
 }
